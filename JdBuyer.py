@@ -18,6 +18,7 @@ class Buyer(object):
     京东买手
     """
 
+
     # 初始化
     def __init__(self):
         self.session = Session()
