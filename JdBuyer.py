@@ -113,5 +113,4 @@ if __name__ == '__main__':
 
     buyer = Buyer()  # 初始化
     buyer.loginByQrCode()
-    buyer.buyItemInStock(skuId, areaId, skuNum, stockInterval,
-                         submitRetry, submitInterval, buyTime)
+    buyer.buyItemInStock(skuId, areaId, skuNum, stockInterval, submitRetry, submitInterval, buyTime)
