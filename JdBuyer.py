@@ -14,9 +14,6 @@ from utils import (
 
 
 class Buyer(object):
-    """
-    京东买手
-    """
 
     # 初始化
     def __init__(self):
@@ -25,24 +22,29 @@ class Buyer(object):
         self.enableWx = global_config.getboolean('messenger', 'enable')
         self.scKey = global_config.get('messenger', 'sckey')
 
-    ############## 登录相关 #############
+    # # # # # # # # # # # # # # # # # # # # # # # # # # 登录相关 # # # # # # # # # # # # # # # # # # # # # # # # #
     # 二维码登录
     def loginByQrCode(self):
         if self.session.isLogin:
             logger.info('登录成功')
             return
 
-        # download QR code
+        # 下载二维码
         qrCode = self.session.getQRcode()
         if not qrCode:
             raise JDException('二维码下载失败')
 
+        # 打开二维码
         fileName = 'QRcode.png'
         save_image(qrCode, fileName)
         logger.info('二维码获取成功，请打开京东APP扫描')
         open_image(fileName)
 
-        # get QR code ticket
+        """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+                                                        用手机扫码
+        """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+        # 得到二维码ticket
         ticket = None
         retryTimes = 85
         for i in range(retryTimes):
@@ -53,15 +55,17 @@ class Buyer(object):
         else:
             raise JDException('二维码过期，请重新获取扫描')
 
-        # validate QR code ticket
+        # 验证二维码ticket
         if not self.session.validateQRcodeTicket(ticket):
             raise JDException('二维码信息校验失败')
 
         logger.info('二维码登录成功')
         self.session.isLogin = True
+
+        # 保存cookie
         self.session.saveCookies()
 
-    ############## 外部方法 #############
+    # # # # # # # # # # # # # # # # # # # # # # # # # # 外部方法 # # # # # # # # # # # # # # # # # # # # # # # # #
     def buyItemInStock(self, skuId, areaId, skuNum=1, stockInterval=3, submitRetry=3, submitInterval=5, buyTime='2022-08-06 00:00:00'):
         """根据库存自动下单商品
         :skuId 商品sku
@@ -98,7 +102,7 @@ if __name__ == '__main__':
     # 商品sku
     skuId = '100015253059'
     # 区域id(可根据工程 area_id 目录查找)
-    areaId = '1_2901_55554_0'
+    areaId = '17_1381_50718_53772'
     # 购买数量
     skuNum = 1
     # 库存查询间隔(秒)
@@ -108,8 +112,13 @@ if __name__ == '__main__':
     # 下单尝试间隔(秒)
     submitInterval = 5
     # 程序开始执行时间(晚于当前时间立即执行，适用于定时抢购类)
-    buyTime = '2022-10-10 00:00:00'
+    buyTime = '2023-04-23 20:00:00'
 
-    buyer = Buyer()  # 初始化
+    # 初始化
+    buyer = Buyer()
+
+    # 二维码登录：保存cookie
     buyer.loginByQrCode()
+
+    # 根据库存下单购买
     buyer.buyItemInStock(skuId, areaId, skuNum, stockInterval, submitRetry, submitInterval, buyTime)

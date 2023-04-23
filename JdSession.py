@@ -19,17 +19,14 @@ elif __file__:
 
 
 class Session(object):
-    """
-    京东买手
-    """
 
-    # 初始化
+    # # # # # # # # # # # # # # # # # # # # # # # # # 初始化 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
     def __init__(self):
         self.userAgent = DEFAULT_USER_AGENT
         self.headers = {'User-Agent': self.userAgent}
         self.timeout = DEFAULT_TIMEOUT
-        self.itemDetails = dict()  # 商品信息：分类id、商家id
-        self.username = 'jd'
+        self.itemDetails = dict()   # 商品信息：分类id、商家id
+        self.username = 'jd'    # 账号名称，默认为[jd], 可随意填写，用于本地保存账号信息，方便多用户登录
         self.isLogin = False
         self.password = None
         self.sess = requests.session()
@@ -38,21 +35,11 @@ class Session(object):
         except Exception:
             pass
 
-    ############## 登录相关 #############
-    # 保存 cookie
-    def saveCookies(self):
-        cookiesFile = os.path.join(
-            absPath, './cookies/{0}.cookies'.format(self.username))
-        directory = os.path.dirname(cookiesFile)
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-        with open(cookiesFile, 'wb') as f:
-            pickle.dump(self.sess.cookies, f)
+    # # # # # # # # # # # # # # # # # # # # # # # # # # 登录 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
     # 加载 cookie
     def loadCookies(self):
-        cookiesFile = os.path.join(
-            absPath, './cookies/{0}.cookies'.format(self.username))
+        cookiesFile = os.path.join(absPath, './cookies/{0}.cookies'.format(self.username))
         with open(cookiesFile, 'rb') as f:
             local_cookies = pickle.load(f)
         self.sess.cookies.update(local_cookies)
@@ -79,7 +66,17 @@ class Session(object):
         self.sess = requests.session()
         return False
 
-    # 获取登录页
+    # 保存 cookie
+    def saveCookies(self):
+        cookiesFile = os.path.join(
+            absPath, './cookies/{0}.cookies'.format(self.username))
+        directory = os.path.dirname(cookiesFile)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        with open(cookiesFile, 'wb') as f:
+            pickle.dump(self.sess.cookies, f)
+
+    # 获取登录页（未用）
     def getLoginPage(self):
         url = "https://passport.jd.com/new/login.aspx"
         page = self.sess.get(url, headers=self.headers)
@@ -102,7 +99,7 @@ class Session(object):
         if not self.respStatus(resp):
             return None
 
-        return resp.content
+        return resp.content  # 二维码
 
     # 获取Ticket
     def getQRcodeTicket(self):
@@ -146,7 +143,8 @@ class Session(object):
         else:
             return False
 
-    ############## 商品方法 #############
+    # # # # # # # # # # # # # # # # # # # # # # # # # 购买商品 # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
     # 获取商品详情信息
     def getItemDetail(self, skuId, skuNum=1, areaId=1):
         """ 查询商品详情
@@ -232,7 +230,8 @@ class Session(object):
         data = {
             'functionId': 'pcCart_jc_cartAdd',
             'appid': 'JDC_mall_cart',
-            'body': '{\"operations\":[{\"carttype\":1,\"TheSkus\":[{\"Id\":\"' + skuId + '\",\"num\":' + str(skuNum) + '}]}]}',
+            'body': '{\"operations\":[{\"carttype\":1,\"TheSkus\":[{\"Id\":\"' + skuId + '\",\"num\":' + str(
+                skuNum) + '}]}]}',
             'loginType': 3
         }
 
@@ -256,8 +255,8 @@ class Session(object):
             'referer': 'https://cart.jd.com'
         }
 
-        body = '{\"operations\":[{\"TheSkus\":[{\"Id\":\"'+skuId+'\",\"num\":'+str(
-            skuNum)+',\"skuUuid\":\"'+skuUid+'\",\"useUuid\":false}]}],\"serInfo\":{\"area\":\"'+areaId+'\"}}'
+        body = '{\"operations\":[{\"TheSkus\":[{\"Id\":\"' + skuId + '\",\"num\":' + str(
+            skuNum) + ',\"skuUuid\":\"' + skuUid + '\",\"useUuid\":false}]}],\"serInfo\":{\"area\":\"' + areaId + '\"}}'
         data = {
             'functionId': 'pcCart_jc_changeSkuNum',
             'appid': 'JDC_mall_cart',
@@ -369,9 +368,9 @@ class Session(object):
                 # remove '寄送至： ' from the begin
                 'address': html.xpath("//span[@id='sendAddr']")[0].text[5:],
                 # remove '收件人:' from the begin
-                'receiver':  html.xpath("//span[@id='sendMobile']")[0].text[4:],
+                'receiver': html.xpath("//span[@id='sendMobile']")[0].text[4:],
                 # remove '￥' from the begin
-                'total_price':  html.xpath("//span[@id='sumPayPriceId']")[0].text[1:],
+                'total_price': html.xpath("//span[@id='sumPayPriceId']")[0].text[1:],
                 'items': []
             }
             return order_detail
@@ -407,7 +406,7 @@ class Session(object):
                 # remove '寄送至： ' from the begin
                 'address': html.xpath("//span[@class='addr-info']")[0].text,
                 # remove '收件人:' from the begin
-                'receiver':  html.xpath("//span[@class='addr-name']")[0].text,
+                'receiver': html.xpath("//span[@class='addr-name']")[0].text,
             }
             return order_detail
         except Exception as e:
@@ -537,7 +536,6 @@ class Session(object):
 
 
 if __name__ == '__main__':
-
     skuId = '100015253059'
     areaId = '1_2901_55554_0'
     skuNum = 1
